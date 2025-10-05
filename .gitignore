@@ -1,0 +1,135 @@
+# ML Project - Optimized .gitignore
+
+# ========================================
+# CRITICAL: Large Model Files (GitHub 100MB limit)
+# ========================================
+*.keras
+*.h5
+*.pkl
+*.joblib
+*.model
+best_handwriting_model_optimized.keras
+Word_Prediction.keras
+
+# ========================================
+# Dataset Directories (Too large for Git)
+# ========================================
+hand_words/
+comp_words/
+preprocessed_hand_words/
+preprocessed_comp_words/
+data_split/
+
+# ========================================
+# Runtime Generated Files
+# ========================================
+uploads/
+temp_synthetic_test.jpg
+*.log
+handwriting_classification.log
+
+# ========================================
+# Python Environment & Dependencies
+# ========================================
+venv/
+env/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ========================================
+# Jupyter Notebook Checkpoints
+# ========================================
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# ========================================
+# IDE & Editor Files
+# ========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ========================================
+# OS Generated Files
+# ========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ========================================
+# Flask/Web App Specifics
+# ========================================
+instance/
+.webassets-cache
+.coverage
+htmlcov/
+
+# ========================================
+# TensorFlow & ML Specifics
+# ========================================
+*.pb
+saved_model/
+checkpoints/
+logs/
+tensorboard_logs/
+.tensorboard/
+
+# ========================================
+# Data Files (Keep Small Samples Only)
+# ========================================
+*.csv
+*.tsv
+*.json
+*.xml
+*.sqlite
+*.db
+
+# ========================================
+# Temporary & Cache Files
+# ========================================
+*.tmp
+*.temp
+.cache/
+.pytest_cache/
+.coverage
+
+# ========================================
+# Keep These Important Files
+# ========================================
+!requirements.txt
+!app.py
+!*.ipynb
+!README.md
+!CLAUDE.md
+!templates/
+!FONTS/
+!screenshot/
+
+# ========================================
+# Deployment Files (Optional - Uncomment if needed)
+# ========================================
+# .env
+# .env.local
+# .env.production
+# docker-compose.override.yml

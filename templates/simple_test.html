@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Simple Upload Test</title>
+    <style>
+        body { padding: 50px; font-family: Arial, sans-serif; }
+        .form-container { max-width: 500px; margin: 0 auto; }
+        input[type="file"] { margin: 20px 0; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Simple File Upload Test</h1>
+        <form method="post" enctype="multipart/form-data">
+            <p>Select an image file:</p>
+            <input type="file" name="file" accept="image/*" required>
+            <br>
+            <button type="submit">Upload & Analyze</button>
+        </form>
+        
+        {% if error %}
+            <div style="color: red; margin-top: 20px;">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+        
+        {% if result %}
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 5px;">
+                <h3>Result:</h3>
+                <p><strong>Prediction:</strong> {{ result.prediction }}</p>
+                <p><strong>Confidence:</strong> {{ "%.1f"|format(result.probability) }}%</p>
+                {% if filename %}
+                    <p><img src="{{ url_for('uploaded_file', filename=filename) }}" style="max-width: 300px; border-radius: 5px;"></p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

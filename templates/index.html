@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>AI Handwriting Classifier</title>
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --info-color: #3b82f6;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: 
+                linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(148, 163, 184, 0.08) 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(148, 163, 184, 0.06) 0%, transparent 60%),
+                radial-gradient(circle at 60% 40%, rgba(148, 163, 184, 0.04) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(45deg, transparent 40%, rgba(148, 163, 184, 0.02) 50%, transparent 60%),
+                linear-gradient(-45deg, transparent 40%, rgba(148, 163, 184, 0.015) 50%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+            padding: 2rem 0;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .main-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, var(--dark-color) 0%, #374151 100%);
+            color: white;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            background-size: 20px 20px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #ffffff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .content-section {
+            padding: 3rem 2rem;
+        }
+
+        .description {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+
+        .upload-zone {
+            border: 3px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            transform: translateY(-2px);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--success-color);
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover .upload-icon {
+            transform: scale(1.1);
+            color: var(--secondary-color);
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            color: white;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+            min-width: 160px;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        }
+
+        .btn-upload:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .result-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .image-section {
+            padding: 1.5rem;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .uploaded-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .prediction-section {
+            padding: 2rem;
+        }
+
+        .prediction-label {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .prediction-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .confidence-section {
+            margin-top: 1.5rem;
+        }
+
+        .confidence-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .confidence-bar {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s ease;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .confidence-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .human-generated {
+            color: var(--success-color);
+        }
+
+        .computer-generated {
+            color: var(--info-color);
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: var(--danger-color);
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .loading-spinner {
+            display: none;
+            margin: 1rem auto;
+        }
+
+        .spinner-border {
+            width: 2rem;
+            height: 2rem;
+            border-width: 3px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 2rem;
+            }
+            
+            .content-section {
+                padding: 2rem 1.5rem;
+            }
+            
+            .upload-zone {
+                padding: 2rem 1rem;
+            }
+            
+            .upload-icon {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+                    <div class="main-card fade-in-up">
+                        <!-- Header Section -->
+                        <div class="header-section">
+                            <div class="header-content">
+                                <i class="fas fa-brain mb-3" style="font-size: 3rem; opacity: 0.9;"></i>
+                                <h1 class="header-title">AI Handwriting Classifier</h1>
+                                <p class="header-subtitle">Advanced Machine Learning • Human vs Computer Detection</p>
+                            </div>
+                        </div>
+
+                        <!-- Content Section -->
+                        <div class="content-section">
+                            <p class="description">
+                                Upload an image of handwritten text and our AI will analyze it to determine whether it was written by a human or generated by a computer. Our model uses advanced deep learning techniques for accurate classification.
+                            </p>
+
+                            <!-- Upload Form -->
+                            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                                <div class="upload-zone" id="uploadZone">
+                                    <input type="file" class="file-input" name="file" id="fileInput" accept="image/*" required>
+                                    <div class="upload-content">
+                                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                        <div class="upload-text">Choose an image or drag & drop</div>
+                                        <div class="upload-subtext">Supports JPG, PNG, BMP, TIFF formats</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-upload" id="uploadBtn">
+                                        <i class="fas fa-magic me-2"></i>
+                                        Analyze Handwriting
+                                    </button>
+                                    <div class="loading-spinner" id="loadingSpinner">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Analyzing...</span>
+                                        </div>
+                                        <div class="mt-2">Analyzing your image...</div>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- Error Alert -->
+                            {% if error %}
+                                <div class="alert alert-danger fade-in-up" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Error:</strong> {{ error }}
+                                </div>
+                            {% endif %}
+
+                            <!-- Results Section -->
+                            {% if result %}
+                                <div class="result-section fade-in-up">
+                                    <div class="result-header">
+                                        <h3 class="result-title">
+                                            <i class="fas fa-chart-line me-2"></i>
+                                            Analysis Results
+                                        </h3>
+                                    </div>
+                                    
+                                    <div class="result-card">
+                                        <div class="row g-0">
+                                            <div class="col-md-5">
+                                                <div class="image-section">
+                                                    <img src="{{ url_for('uploaded_file', filename=filename) }}" 
+                                                         class="uploaded-image" 
+                                                         alt="Uploaded Image">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-7">
+                                                <div class="prediction-section">
+                                                    <div class="prediction-label">Classification Result:</div>
+                                                    <div class="prediction-value {{ 'human-generated' if 'Human' in result.prediction else 'computer-generated' }}">
+                                                        <i class="fas {{ 'fa-user' if 'Human' in result.prediction else 'fa-robot' }} me-2"></i>
+                                                        {{ result.prediction }}
+                                                    </div>
+                                                    
+                                                    <div class="confidence-section">
+                                                        <div class="confidence-label">Confidence Level:</div>
+                                                        <div class="confidence-bar">
+                                                            <div class="confidence-fill" 
+                                                                 style="width: {{ result.probability }}%"></div>
+                                                        </div>
+                                                        <div class="confidence-text">{{ "%.1f"|format(result.probability) }}%</div>
+                                                    </div>
+                                                    
+                                                    <div class="mt-3">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-info-circle me-1"></i>
+                                                            Raw model score: {{ "%.4f"|format(result.raw_score) }}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Footer Info -->
+                    <div class="text-center mt-4">
+                        <small class="text-white-50">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Powered by TensorFlow & Deep Learning
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Simplified and robust file upload functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+            const uploadForm = document.getElementById('uploadForm');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            console.log('DOM loaded, initializing file upload...');
+            console.log('Elements found:', {
+                uploadZone: !!uploadZone,
+                fileInput: !!fileInput,
+                uploadForm: !!uploadForm,
+                uploadBtn: !!uploadBtn,
+                loadingSpinner: !!loadingSpinner
+            });
+
+            // Function to update UI when file is selected
+            function updateFileSelected(fileName) {
+                console.log('File selected:', fileName);
+                uploadZone.querySelector('.upload-text').textContent = `Selected: ${fileName}`;
+                uploadZone.querySelector('.upload-subtext').textContent = 'Click "Analyze Handwriting" to proceed';
+                uploadZone.style.borderColor = 'var(--success-color)';
+                uploadZone.style.background = 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)';
+            }
+
+            // File selection handler - direct input change
+            fileInput.addEventListener('change', function(e) {
+                console.log('File input change event triggered');
+                console.log('Files:', e.target.files);
+                if (e.target.files && e.target.files.length > 0) {
+                    const fileName = e.target.files[0].name;
+                    updateFileSelected(fileName);
+                }
+            });
+
+            // Click handler for upload zone
+            uploadZone.addEventListener('click', function(e) {
+                console.log('Upload zone clicked');
+                // Only trigger file input if clicking on the zone itself, not the file input
+                if (e.target !== fileInput) {
+                    fileInput.click();
+                }
+            });
+
+            // Drag and drop functionality
+            uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadZone.classList.add('dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadZone.classList.remove('dragover');
+            });
+
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadZone.classList.remove('dragover');
+                
+                console.log('Files dropped');
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    // Manually set the files to the input
+                    fileInput.files = files;
+                    const fileName = files[0].name;
+                    updateFileSelected(fileName);
+                    
+                    // Trigger change event manually
+                    const changeEvent = new Event('change', { bubbles: true });
+                    fileInput.dispatchEvent(changeEvent);
+                }
+            });
+
+            // Form submission handler
+            uploadForm.addEventListener('submit', function(e) {
+                console.log('Form submission triggered');
+                console.log('File input files:', fileInput.files);
+                console.log('File input files length:', fileInput.files ? fileInput.files.length : 0);
+                
+                // Check if file is selected
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    e.preventDefault();
+                    alert('Please select an image file first.');
+                    return false;
+                }
+
+                // Validate file type
+                const file = fileInput.files[0];
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/tiff', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    e.preventDefault();
+                    alert('Please select a valid image file (JPG, PNG, GIF, BMP, TIFF, WebP).');
+                    return false;
+                }
+
+                console.log('File validation passed, proceeding with upload...');
+
+                // Show loading state
+                uploadBtn.style.display = 'none';
+                loadingSpinner.style.display = 'block';
+                uploadZone.style.pointerEvents = 'none';
+                uploadZone.style.opacity = '0.7';
+
+                // Let the form submit naturally
+                return true;
+            });
+
+            // Animate confidence bar on page load
+            const confidenceFill = document.querySelector('.confidence-fill');
+            if (confidenceFill) {
+                setTimeout(() => {
+                    const currentWidth = confidenceFill.style.width;
+                    confidenceFill.style.width = '0%';
+                    setTimeout(() => {
+                        confidenceFill.style.width = currentWidth;
+                    }, 100);
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>
